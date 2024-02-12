@@ -1,0 +1,26 @@
+﻿@using AgapeaBlazor2024.Client.Models.Services.Interfaces
+@inject IRestService restSvc
+@inject NavigationManager navigate
+
+
+<!--panel de categorias raices-->
+<h6 class="text-dark mt-4 ms-3">CATEGORÍAS</h6>
+@if (this._categoriasRaiz.Count != 0)
+{
+    <div class="list-group">
+        @foreach (Categoria cat in _categoriasRaiz)
+        {
+            <a onclick="@(()=>this.navigate.NavigateTo($"/Tienda/Libros/{cat.IdCategoria}"))" class="list-group-item list-group-item-action border border-end-0 border-start-0 text-dark">@cat.NombreCategoria</a>
+        }
+    </div>
+}
+
+
+@code {
+    public List<Categoria> _categoriasRaiz { get; set; } = new List<Categoria>();
+
+    protected override async Task OnInitializedAsync()
+    {
+        this._categoriasRaiz = await this.restSvc.RecuperarCategorias("");
+    }
+}

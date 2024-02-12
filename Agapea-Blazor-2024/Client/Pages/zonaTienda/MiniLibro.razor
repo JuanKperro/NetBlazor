@@ -1,0 +1,59 @@
+﻿@using AgapeaBlazor2024.Client.Models.Services.Interfaces
+@*
+    como no tiene @page .... no va a ser invocable por el modulo de enrutamiento
+    recibe como parametro desde el comp.padre Libros.razor el valor del libro a pintar
+*@
+@inject NavigationManager navigate
+@inject IStorageService storageSvc
+
+<div class="mb-3" style="max-width: 540px;" id="cardLibro-@libroAPintar.ISBN13"
+     onmouseover="@(() => { this.estiloBotonComprar="visibility:visible"; } )"
+     onmouseout="@(() => { this.estiloBotonComprar="visibility:hidden"; } )">
+
+    <div class="row g-0">
+        <!-- columna para miniimagen del libro y boton comprar-->
+        <div class="col-md-4 text-center d-flex flex-column justify-content-center">
+            <div>
+                <a onclick="@( ()=>{ this.navigate.NavigateTo($"/Tienda/MostrarDetallesLibro/{libroAPintar.ISBN13}"); })">
+                    <img class="img-fluid rounded-start rounded-end" src="@libroAPintar.ImagenLibroBASE64" alt="...">
+                </a>
+            </div>
+            <div class="m-3">
+                <a onclick="@AddLibroPedido"
+                   class="btn btn-primary btn-sm"
+                   style="@this.estiloBotonComprar">
+                    Comprar...
+                </a>
+            </div>
+        </div>
+
+        <!-- columna para titulo del libro, autores, editorial, pags y precio-->
+        <div class="col-md-8">
+            <div class="ms-3">
+                <h6 class="card-title" style="height: 50px"><a class="text-decoration-none" onclick="@( ()=>{ this.navigate.NavigateTo($"/Tienda/MostrarDetallesLibro/{libroAPintar.ISBN13}"); })">@libroAPintar.Titulo</a></h6>
+                <div class="card-text">@libroAPintar.Autores</div>
+                <div class="card-text">@libroAPintar.Editorial</div>
+                <div class="card-text"><small class="text-muted">@libroAPintar.NumeroPaginas  páginas</small></div>
+                <div class="card-text"><strong>@libroAPintar.Precio €</strong></div>
+            </div>
+        </div>
+
+    </div>
+</div>
+
+
+
+@code {
+
+    public String estiloBotonComprar { get; set; } = "visibility:hidden";
+
+    [Parameter]
+    public Libro libroAPintar { get; set; }
+
+    public void AddLibroPedido()
+    {
+        this.storageSvc.OperarItemsPedido(this.libroAPintar, 1, "añadir");
+        this.navigate.NavigateTo("/Tienda/MostrarPedido");
+    }
+
+}

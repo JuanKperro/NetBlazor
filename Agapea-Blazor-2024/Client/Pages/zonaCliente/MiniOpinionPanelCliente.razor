@@ -1,0 +1,106 @@
+﻿@using AgapeaBlazor2024.Client.Models.Services.Interfaces
+
+ @inject IRestService restSvc
+@inject IStorageService stgSvc
+
+<div class="card">
+    <div class="card-header d-flex flex-row justify-content-end">
+        <button type="button" class="btn-close"></button>
+    </div>
+    <div class="card-body">
+        <div class="row">
+            <div class="col-md-2"><img src="@this.opinion.Libro.ImagenLibroBASE64" class="img-fluid rounded-start" alt="..." /></div>
+            
+            <div class="col-md-4">
+                <h5 class="card-title">@this.opinion.Libro.Titulo</h5>
+                <p class="card-text">@this.opinion.Libro.Autores</p>
+                <p class="card-text"><small class="text-muted">@this.opinion.Libro.Editorial</small></p>
+                <p class="card-text">
+                    
+                        @for (int i = 0; i < this.opinion.Puntuacion; i++)
+                        {
+                            <i class="fa-star fa-solid" style="color: red; font-size: 0.5em">@i</i>
+                        }
+                    
+                </p>
+            </div>
+
+            <div class="col-md-6">
+                <p class="card-title">
+                    @{
+                        for (int i = 0; i < this.opinion.Puntuacion; i++)
+                        {
+                            <i class="fa-solid fa-star">@i</i>
+                        }
+                    }
+
+                    
+                    
+                </p>
+                
+                <p class="card-text">
+                    <textarea class="form-control" id="textoComentario" name="textoComentario" placeholder="...aqui el comentario que has dejado del Libro...." disabled="@(!this.modoEdicion)">
+
+                    @this.textoOpinion
+                    </textarea>
+                </p>
+                <!-- estos botones estarian ocultos si la opinion aun no esta aprobada...-->
+
+                    @if (!this.opinion.Aprobada)
+                    {
+                    <p class="card-text">
+                        <div class="d-flex flex-row justify-content-end">
+                            <button type="button" class="btn btn-sm btn-primary" @onclick="()=>{this.modoEdicion=true;StateHasChanged();} "><i class="fa-regular fa-pen-to-square"></i> Editar Opinion</button>
+                            <button type="button" class="btn btn-sm btn-primary" @onclick="()=>modificarOpinion(this.stringeliminar)"><i class="fa-regular fa-pen-to-square"></i> Eliminar Opinion</button>
+                            <button type="button" class="btn btn-sm btn-success mx-lg-2" id="btnGuardarComentario" disabled="@(!this.modoEdicion)" @onclick="()=>modificarOpinion(this.stringeditar)">Guardar Comentario</button>
+                        </div>
+                    </p>
+                    }
+                    
+            </div>
+        </div>
+    </div>
+</div>
+@code {
+
+    [Parameter]
+    public Opinion opinion { get; set; }
+
+    public bool modoEdicion = false;
+
+    public string stringeliminar = "eliminar";
+
+    public string stringeditar = "editar";
+
+    string textoOpinion = "";
+
+    protected override void OnInitialized()
+    {
+        textoOpinion = this.opinion.TextoOpinion;
+    }
+
+
+    public async Task modificarOpinion(string operacion)
+
+    {
+        Dictionary<string, string> datosOperacion = new Dictionary<string, string>()
+        {{"operacion", operacion
+        },
+        {"idOpinion", this.opinion.IdOpinion
+        },
+        {"textoOpinion", this.textoOpinion
+        } 
+        };
+
+            RestMessage resp = await restSvc.OperarOpinion(datosOperacion);
+            if (resp.Codigo == 0)
+            {
+                this.stgSvc.AlmacenamientoDatosCliente(resp.DatosCliente);
+                StateHasChanged();
+            }
+        
+        
+    
+    }
+
+}

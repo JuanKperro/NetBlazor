@@ -1,0 +1,31 @@
+﻿@using AgapeaBlazor2024.Client.Models.Services.Interfaces
+
+@inject IStorageService storageSvc
+@inject NavigationManager navigate
+@inject IRestService restSvc
+@inject IJSRuntime jsSvc
+
+<div class="card">
+    <h5 class="card-tittle">@Direccion_pintar.Calle</h5>
+    <h6 class="card-subtitle text-muted mb-2">@Direccion_pintar.IdDireccion</h6>
+    <p class="card-text">CP: @Direccion_pintar.CP, Municipio: @Direccion_pintar.MunicipioDirec.DMUN50 (Provincia: @Direccion_pintar.ProvinciaDirec.PRO) Pais: @Direccion_pintar.Pais</p>
+    <button class="btn btn-outline-primary btn-sm" value="editar_@this.Direccion_pintar.IdDireccion" 
+    id="btnEditarDireccion" @onclick="@(async (ev)=>await this.OperarDireccionEvent.InvokeAsync($"editar_{this.Direccion_pintar.IdDireccion}"))">Editar</button>
+    <button class="btn btn-outline-danger btn-sm" value="eliminar_@this.Direccion_pintar.IdDireccion"
+    id="btnEliminarDireccion" @onclick="@(async (ev)=>await this.OperarDireccionEvent.InvokeAsync($"eliminar_{this.Direccion_pintar.IdDireccion}"))">Eliminar</button>
+</div>
+
+@code {
+   
+
+    [Parameter]
+    public Direccion Direccion_pintar { get; set; }
+
+    [Parameter]
+    public EventCallback<string> OperarDireccionEvent { get; set; } = new EventCallback<string>();
+
+
+
+   
+
+}

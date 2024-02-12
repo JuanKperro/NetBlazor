@@ -1,0 +1,17 @@
+﻿@page "/Cliente/CambioContraseña"
+
+@inject NavigationManager navigate
+
+<div class="container">
+    <div class="row">
+        <div class="col">
+            <h3><strong>Datos Actualizados Correctamente </strong> en <img src="/images/agapea-logo.svg" width="186px" height="40px" /></h3>
+            <p>Para completar el cambio de contraseña acceda al enlace incluido en el EMAIL que el acabamos de enviar.</p>
+            <p>Si no lo recibe, compruebe en su carpeta de SPAM o Correo no deseado.</p>
+        </div>
+    </div>
+    <button class="btn btn-primary btn-lg" onclick="@(()=> this.navigate.NavigateTo("/Tienda/Libros"))">Volver a Tienda</button>
+</div>
+@code {
+
+}

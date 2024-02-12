@@ -1,0 +1,42 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 17
+VisualStudioVersion = 17.8.34322.80
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "AgapeaBlazor2024.Server", "Agapea-Blazor-2024\Server\AgapeaBlazor2024.Server.csproj", "{19B4B228-DA30-48CE-BBC5-829F19B53E7A}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "AgapeaBlazor2024.Client", "Agapea-Blazor-2024\Client\AgapeaBlazor2024.Client.csproj", "{13C7EE40-FAB4-45D2-B5A7-3677BAA8CC09}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "AgapeaBlazor2024.Shared", "Agapea-Blazor-2024\Shared\AgapeaBlazor2024.Shared.csproj", "{977EA949-3EAA-4B90-AB60-858C3F8A5253}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Elementos de la solución", "Elementos de la solución", "{9C916042-48A3-49E9-A948-48C1AEB4EF49}"
+	ProjectSection(SolutionItems) = preProject
+		LEEME_PAQUETES_NUGET_INSTALAR.txt = LEEME_PAQUETES_NUGET_INSTALAR.txt
+	EndProjectSection
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{19B4B228-DA30-48CE-BBC5-829F19B53E7A}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{19B4B228-DA30-48CE-BBC5-829F19B53E7A}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{19B4B228-DA30-48CE-BBC5-829F19B53E7A}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{19B4B228-DA30-48CE-BBC5-829F19B53E7A}.Release|Any CPU.Build.0 = Release|Any CPU
+		{13C7EE40-FAB4-45D2-B5A7-3677BAA8CC09}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{13C7EE40-FAB4-45D2-B5A7-3677BAA8CC09}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{13C7EE40-FAB4-45D2-B5A7-3677BAA8CC09}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{13C7EE40-FAB4-45D2-B5A7-3677BAA8CC09}.Release|Any CPU.Build.0 = Release|Any CPU
+		{977EA949-3EAA-4B90-AB60-858C3F8A5253}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{977EA949-3EAA-4B90-AB60-858C3F8A5253}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{977EA949-3EAA-4B90-AB60-858C3F8A5253}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{977EA949-3EAA-4B90-AB60-858C3F8A5253}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {CE85833F-9530-4DD8-A5BA-4519785A644E}
+	EndGlobalSection
+EndGlobal

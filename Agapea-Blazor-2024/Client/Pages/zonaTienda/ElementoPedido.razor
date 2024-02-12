@@ -1,0 +1,61 @@
+﻿<div class="row">
+    <!-- nos creamos un card por cada elmento del pedido -->
+    <div class="card mb-3" style="max-width: 540px;">
+        <div class="row g-0">
+            <div class="col-md-4">
+                <img src="@elemento.LibroItem.ImagenLibroBASE64" class="img-fluid rounded-start" alt="...">
+            </div>
+            <div class="col-md-8">
+                <div class="card-body">
+                    <div class="d-flex flex-row justify-content-between">
+                        <h5 class="card-title">@elemento.LibroItem.Titulo</h5>
+                        <!-- boton para eliminar libro de elementos pedido-->
+                        <a class="btn btn-light btn-sm" onclick="@(()=>HandlerBotones("borrar"))">
+                            <span style="color:red"><strong>X</strong></span>
+                        </a>
+
+                    </div>
+                    <div class="d-flex flex-row justify-content-between">
+                        <!-- boton +, label cantidad, boton -  el precio del libro y subtotal elemento pedido-->
+                        <a class="btn btn-outline-primary btn-sm" onclick="@(()=>HandlerBotones("restar"))">
+                            <strong>-</strong>
+                        </a>
+
+                        <label><small>@elemento.CantidadItem</small></label>
+
+                        <a class="btn btn-outline-primary btn-sm" onclick="@(()=>@HandlerBotones("sumar"))">
+                            <strong>+</strong>
+                        </a>
+
+                        <label><small>x</small><span style="color:red">@elemento.LibroItem.Precio€</span></label>
+                        <label style="color:red">@(elemento.LibroItem.Precio * elemento.CantidadItem)€</label>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <!-- ------------------------------------------------ -->
+</div>
+
+
+@code {
+    [Parameter]
+    public ItemPedido elemento{ get; set; }
+
+    //este comp.hijo necesita notificar al comp.padre "MostrarPedido" cuando se pulsa alguno de sus botones:  + -  o X
+    //de q hay modificacion de cantidad o eliminacion...NECESITAS COMUNICACION HIJO ---> PADRE
+    [Parameter]
+    public EventCallback<KeyValuePair<String, ItemPedido>> operarItemEvent { get; set; } = new EventCallback<KeyValuePair<string, ItemPedido>>();
+
+    private async Task HandlerBotones(String operacion)
+    {
+        switch (operacion)
+        {
+            case "sumar": this.elemento.CantidadItem += 1;  break;
+            case "restar": this.elemento.CantidadItem -= 1;  break;
+            case "borrar": this.elemento.CantidadItem = 0;break;
+        }
+        this.operarItemEvent.InvokeAsync(new KeyValuePair<string, ItemPedido>(operacion,elemento));
+    }
+
+}

@@ -1,0 +1,54 @@
+﻿@page "/Cliente/CambioContraseñaOk"
+@using AgapeaBlazor2024.Client.Models.Services.Interfaces
+
+@inject NavigationManager navigate
+@inject IStorageService storageSvc
+@inject IRestService restSvc
+
+<div class="container">
+    <div class="row">
+        <div class="col">
+            <h3><strong>@this.operacion</strong> en <img src="/images/agapea-logo.svg" width="186px" height="40px" /></h3>
+            <p>@this.mensaje</p>
+            
+        </div>
+    </div>
+    <button class="btn btn-primary btn-lg" onclick="@(()=> this.navigate.NavigateTo("/Cliente/Login"))">Volver a Login</button>
+</div>
+@code {
+
+    [Parameter]
+    [SupplyParameterFromQuery(Name = "idcliente")]
+    public string IdCliente { get; set; }
+
+    [Parameter]
+    [SupplyParameterFromQuery(Name = "token")]
+    public string token { get; set; }
+
+    [Parameter]
+    [SupplyParameterFromQuery(Name = "pass")]
+    public string pass { get; set; }
+    public string operacion = "Se esta cambiando la contraseña...";
+    public string mensaje = "Espera mientras se trata de cambiar la contraseña...";
+
+
+    protected override async Task OnInitializedAsync()
+    {
+
+
+        RestMessage resp =await this.restSvc.AplicarCambioContraseña(IdCliente, token, pass);
+        if (resp.Codigo == 0)
+        {
+            this.operacion = "Contraseña cambiada correctamente";
+            this.mensaje = "Ya puedes acceder con tu nueva contraseña.";
+        }
+        else
+        {
+            this.operacion = "Error al cambiar la contraseña";
+            this.mensaje = "No se ha podido cambiar la contraseña. Inténtalo de nuevo desde el panel del cliente...";
+        }
+        StateHasChanged();
+        
+    }
+
+}

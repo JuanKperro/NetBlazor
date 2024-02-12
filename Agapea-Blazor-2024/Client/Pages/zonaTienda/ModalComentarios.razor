@@ -1,0 +1,77 @@
+﻿@using AgapeaBlazor2024.Client.Models.Services.Interfaces
+@inject IRestService restSvc
+@inject IStorageService storageSvc
+@inject IJSRuntime jsSvc
+
+<div id="modalComentarios" class="modal fade" tabindex="-1" role="dialog" data-bs-backdrop="static" data-bs-keyboard="false" aria-labelledby="myModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <EditForm id="formuEnviaComentario" Model="this.opinionEnviar" OnValidSubmit="EnviarOpinion">
+            <div class="modal-content">
+                <div class="modal-header">
+                    
+                    <input id="inputValoracion" name="valoracion" @bind="this.valoracion" hidden />
+                    <h5 className="modal-title" id="myModalLabel">Tu nueva opinion:</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                    <div id="mensaje-valoracion-agregada"></div>
+                </div>
+                <div id="nuevoComentario" class="modal-body">
+                    <div class="form-group">
+                        <p>Añade un comentario sobre: <span style="color:blue;">@libro.Titulo</span></p>
+                        <textarea class="form-control" @bind="this.textoOpinion" id="textoComentario" name="textoComentario" placeholder="Déjanos un comentario"></textarea>
+                    </div>
+
+                </div>
+                <div class="modal-footer">
+                    <button type="submit" id="enviarComentario" class="btn btn-primary">Guardar comentario</button>
+                </div>
+            </div>
+        </EditForm>
+
+    </div>
+</div>
+@code {
+    [Parameter]
+    public Libro libro { get; set; }
+
+    [Parameter]
+    public int valoracion { get; set; }
+
+    private string idCliente { get; set; }
+
+    private string loginCliente { get; set; }
+
+    private string textoOpinion { get; set; } = "";
+
+    public Opinion opinionEnviar { get; set; } = new Opinion();
+
+
+    public async Task EnviarOpinion()
+    {
+        opinionEnviar = new Opinion();
+        idCliente = this.storageSvc.RecuperarDatosCliente().IdCliente;
+        loginCliente = this.storageSvc.RecuperarDatosCliente().Credenciales.Login;
+        opinionEnviar.TextoOpinion = this.textoOpinion;
+        opinionEnviar.IdCliente = idCliente;
+        opinionEnviar.LoginCliente = loginCliente;
+        opinionEnviar.IdLibro = this.libro.ISBN13;
+        opinionEnviar.Puntuacion = this.valoracion;
+        opinionEnviar.Libro = libro;
+
+        Console.WriteLine($"Opinion a enviar... {opinionEnviar}");
+
+        RestMessage resp = await this.restSvc.EnviarOpinion(opinionEnviar);
+        if (resp.Codigo == 0)
+        {
+            storageSvc.AlmacenamientoDatosCliente(resp.DatosCliente);
+            this.textoOpinion = "";
+            StateHasChanged();
+            await this.jsSvc.InvokeVoidAsync("window.adminFormModal.HideModal", "modalComentarios");
+            
+        }
+        else
+        {
+            await this.jsSvc.InvokeVoidAsync("alert", "No se ha podido enviar la opinion, intentalo mas tarde...");   
+        }
+
+    }
+}

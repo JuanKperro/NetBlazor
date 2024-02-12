@@ -1,0 +1,242 @@
+﻿@using AgapeaBlazor2024.Client.Models.Services.Interfaces
+@inject IRestService restSvc
+
+<div class="row mt-4">
+    <div class="col-1"><img src="/images/img1_mostrar_pedido_datosentrega.png" style="width: 40px; height:26px;" alt='...' /></div>
+    <div class="col-11"><h4><strong>1.- Datos de entrega</strong></h4></div>
+</div>
+
+@* -- fila de radios para seleccionar direccion principal de envio del cliente u otra nueva... -- *@
+<div class="row">
+
+    @if (this.direccionprincipal != null)
+    {
+        <div class="form-check">
+            <input class="form-check-input" type="radio" name="direccionradios" id="direccionprincipal" value="direccionprincipal" checked @onchange="@(()=>{ this.checkdirppalenvio=true; this._datosPago.esPrincipal_envio=true; })"/>
+            <label class="form-check-label" for="direccionprincipal">
+                @this.direccionprincipal.Calle. @this.direccionprincipal.MunicipioDirec.DMUN50, @this.direccionprincipal.ProvinciaDirec.PRO CP: @this.direccionprincipal.CP @this.direccionprincipal.Pais
+            </label>
+        </div>
+    }
+    <div class="form-check">
+        <input class="form-check-input" type="radio" name="direccionradios" id="direccionagapea" disabled />
+        <label class="form-check-label" for="direccionagapea">
+            Recoger en libreria Agapea (No disponible en este momento. Puede hacer el pedido para el envio a domicilio)
+        </label>
+    </div>
+    <div class="form-check">
+        <input class="form-check-input" type="radio" name="direccionradios" id="direccionotra" value="otradireccion" @onchange="@(()=>{ this.checkdirppalenvio=false; this._datosPago.esPrincipal_envio=false; })" />
+        <label class="form-check-label" for="direccionotra">
+            Recibir en otra direccion
+        </label>
+    </div>
+
+</div>
+
+@* -- fila de campos para nueva direccion envio solo si esta chequeado RADIO OTRA DIRECCION-- *@
+@if (!this.checkdirppalenvio)
+{
+    <div class="row mt-2" id="filadireccioncontainer">
+
+        <div class="container" id="direccioncontainer">
+            <div class="row">
+                <div class="col-6">
+                    <label for="inputPais" class="form-label">Pais</label>
+                    <input type="text" class="form-control" id="inputPais" placeholder="España" name="pais" @bind="this._datosPago.DireccionEnvio.Pais" />
+                </div>
+                <div class="col-6">
+                    <label for="inputProvincia" class="form-label">Provincia*</label>
+                    <select id="inputProvincia" class="form-select" name="provincia" @bind="@this._provincia"  @oninput="this.cambioProvincia">
+                        <option value="-1" selected> - Seleccionar Provincia - </option>
+                        @foreach (Provincia unaprov in this.listaProvincias)
+                        {
+                            <option value="@String.Concat(unaprov.CPRO,"-",unaprov.PRO)">@unaprov.PRO</option>
+                        }
+                    </select>
+                </div>
+            </div>
+            <div class='row'>
+                <div class="col-6">
+                    <label for="inputCalle" class="form-label">Direccion completa*</label>
+                    <input type="text" class="form-control" id="inputCalle" placeholder="Mi Direccion" name="calle" @bind="this._datosPago.DireccionEnvio.Calle"/>
+                </div>
+
+                <div class="col-2">
+                    <label for="inputCP" class="form-label">Codigo Postal*</label>
+                    <input type="text" class="form-control" id="inputCP" placeholder="Codigo Postal: 28803" name="cp" @bind="this._datosPago.DireccionEnvio.CP"/>
+                </div>
+
+
+                <div class="col-4">
+                    <label for="inputMunicipio" class="form-label">Localidad*</label>
+                    <select id="inputMunicipio" class="form-select" name="municipio" @bind="@this._municipio"  @oninput="this.cambioMunicipio" disabled="@this._provincia.Equals("-1")">
+                        @foreach (Municipio unmun in this.listaMunicipios)
+                        {
+                            <option value="@String.Concat(unmun.CMUM,"-",unmun.DMUN50)">@unmun.DMUN50</option>
+                        }
+                        <option value="-1" selected> - Selecciona un Municipio -</option>
+                    </select>
+                </div>
+            </div>
+        </div>
+
+    </div>
+}
+
+
+
+@* -- fila de radios para seleccionar datos de contacto persona de envio  -- *@
+<div class="row">
+    <div class="form-check">
+        <input class="form-check-input" type="radio" name="personaenvioradios" id="clienteloggedenvio" value="clienteloggedenvio" checked @onchange="@(()=>{ this.checkclienteloggedenvio=true; this._datosPago.esEnvio_otroDestinatario=false; })" />
+        <label class="form-check-label" for="clienteloggedenvio">
+            Datos de usuario registrado
+            @this.clienteLogged.Credenciales.Email ( @this.clienteLogged.Credenciales.Login )
+        </label>
+    </div>
+    <div class="form-check">
+        <input class="form-check-input" type="radio" name="personaenvioradios" id="otrapersonaenvio" value="otrapersonaenvio" @onchange="@(()=>{ this.checkclienteloggedenvio=false; this._datosPago.esEnvio_otroDestinatario = true; })" />
+        <label class="form-check-label" for="otrapersonaenvio">
+            Usar otros datos
+        </label>
+    </div>
+</div>
+
+@* -- fila de campos para datos de persona de envio -- *@
+<div class='row'>
+@if (this.checkclienteloggedenvio)
+    {
+        <div class='col-3'></div>
+        <div class="col-6">
+            <label for="telefonoContacto" class="form-label">Telefono de contacto*</label>
+            <input type="text" class="form-control" id="telefonoContacto" placeholder="@this.clienteLogged.Telefono" name="telefonoContacto" @bind="this._datosPago.TelefonoDestinatario" />
+        </div>
+
+    } else
+    {
+        <div class='col-6'>
+            <label for="nombreEnvio" class="form-label">Nombre*</label>
+            <input type="text" class="form-control" id="nombreEnvio" name="nombreEnvio" @bind="this._datosPago.NombreDestinatario"  />
+        </div>
+        <div class='col-6'>
+            <label for="apellidosEnvio" class="form-label">Apellidos*</label>
+            <input type="text" class="form-control" id="apellidosEnvio" name="apellidosEnvio" @bind="this._datosPago.ApellidosDestinatario" />
+        </div>
+
+        <div class='col-6'>
+            <label for="emailEnvio" class="form-label">Correo Electronico*</label>
+            <input type="text" class="form-control" id="emailEnvio" name="emailEnvio" @bind="this._datosPago.EmailDestinatario" />
+        </div>
+        <div class='col-6'>
+            <label for="telefonoContactoNuevo" class="form-label">Telefono de contacto*</label>
+            <input type="text" class="form-control" id="telefonoContactoNuevo" name="telefonoContacto" @bind="this._datosPago.TelefonoDestinatario" />
+        </div>
+
+    }
+
+    <div class='col-12'>
+        <label for="otrosDatos" class="form-label">Otros datos de entrega*</label>
+        <input type="text" class="form-control" id="otrosDatos" name="otrosDatos"  />
+    </div>
+</div>
+
+<div class="row">
+    <div class="form-check">
+        <input class="form-check-input" type="checkbox" value="" id="checkfactura"
+               @onchange="@(async (ChangeEventArgs ev)=>await this.ShowDatosFacturaEvent.InvokeAsync((bool)ev.Value))">
+        <label class="form-check-label" for="checkfactura">
+            Deseo Factura
+        </label>
+    </div>
+</div>
+
+@code {
+    [CascadingParameter(Name ="clienteLogged")]
+    public Cliente clienteLogged { get; set; }
+
+    [CascadingParameter(Name ="listaProvincias")]
+    public List<Provincia> listaProvincias { get; set; }
+
+    [CascadingParameter(Name = "EditContextFormPedido")]
+    public EditContext formPedidoEditContext { get; set; }
+
+    [Parameter]
+    public EventCallback<bool> ShowDatosFacturaEvent { get; set; } = new EventCallback<bool>();
+
+    private bool checkdirppalenvio { get; set; } = true;
+    private bool checkclienteloggedenvio { get; set; } = true;
+
+    public string _provincia { get; set; } = "-1";
+    public string _municipio { get; set; } = "-1";
+
+    public System.Object muni { get; set; }
+
+    public DatosPago _datosPago { get; set; }
+
+    private List<Municipio> listaMunicipios { get; set; } = new List<Municipio>();
+    private Direccion direccionprincipal;
+
+    protected override async Task OnInitializedAsync()
+    {
+        
+    }
+
+
+    protected override void OnInitialized()
+    {
+        this._datosPago = this.formPedidoEditContext.Model as DatosPago;
+    }
+
+    protected override void OnParametersSet()
+    {
+
+        if (this.clienteLogged.DireccionesCliente.Count > 0)
+        {
+            if (this.clienteLogged.DireccionesCliente.Where(dir => dir.EsPrincipal == true).Count() > 0)
+            {
+                this.direccionprincipal = this.clienteLogged.DireccionesCliente.Where(dir => dir.EsPrincipal == true).Single<Direccion>();
+            }
+           
+
+        } 
+        
+    }
+
+    public async Task cambioProvincia(ChangeEventArgs ev)
+    {
+        if (ev.Value.ToString() != "-1")
+        {
+
+            this._datosPago.DireccionEnvio.ProvinciaDirec = new Provincia
+                {
+                    CCOM = "",
+                    CPRO = ev.Value.ToString().Split("-")[0],
+                    PRO = ev.Value.ToString().Split("-")[1]
+
+                };
+            //cargar municipios de la provincia seleccionada
+            this.listaMunicipios = await this.restSvc.RecuperarMunicipios(ev.Value.ToString().Split("-")[0]);
+            }    
+        
+    }
+
+    public async Task cambioMunicipio(ChangeEventArgs ev)
+    {
+        if (ev.Value.ToString() != "-1")
+        {
+            this._datosPago.DireccionEnvio.MunicipioDirec = new Municipio
+                {
+                    CPRO = _provincia.Split("-")[0],
+                    CMUM = ev.Value.ToString().Split("-")[0],
+                    DMUN50 = ev.Value.ToString().Split("-")[1]
+                    
+
+                };
+        }
+
+    }
+
+
+    
+
+}

@@ -1,0 +1,58 @@
+﻿@page "/Tienda/FinalizarPedidoOk"
+@using AgapeaBlazor2024.Client.Models.Services.Interfaces
+
+@inject IStorageService storageSvc
+@inject NavigationManager navigate
+@inject IRestService restSvc
+@inject IJSRuntime jsSvc
+
+<div class="container">
+    <div class="row">
+        <img src="/images/pedidoOK.jpg" style="width: 200px; height: 200px;" alt="..." />
+    </div>
+
+    <div class="row">
+        <div class="col">
+            <p><h5>Pago del pedido con id: @_pedidoFinalizado.IdPedido realizado correctamente</h5></p>
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="col">
+            <p>Has pagado @_pedidoFinalizado.Total € en fecha: @_pedidoFinalizado.FechaPedido en Agapea.com</p>
+            <p>Se te ha mandado un email con la factura del mismo (consulta la bandeja de entrada de tu correo o el spam por si acaso.</p>
+            <br />
+            <p> Accede al panel de tu USUARIO para ver la lista de pedidos que has hecho en la tienda.</p>
+        </div>
+    </div>
+
+    <div class="row d-flex justify-content-center">
+        <a class="btn btn-success btn-lg" @onclick="@(()=>this.navigate.NavigateTo("/Cliente/Panel/InicioPanel"))">IR A MI PANEL</a>
+    </div>
+
+</div> 
+
+@code {
+    public Pedido _pedidoFinalizado { get; set; }
+    public Cliente _datosCliente { get; set;}
+
+    [Parameter]
+    [SupplyParameterFromQuery(Name = "idcliente")]
+    public string IdCliente { get; set; }
+
+    [Parameter]
+    [SupplyParameterFromQuery(Name = "idpedido")]
+    public string IdPedido { get; set; }
+
+    protected override async Task OnInitializedAsync()
+    {
+        RestMessage rest = await this.restSvc.Login(IdCliente);
+        if (rest.Codigo == 0)
+        {
+            this._datosCliente = rest.DatosCliente;
+            this.storageSvc.AlmacenamientoDatosCliente(this._datosCliente);
+            this._pedidoFinalizado = this._datosCliente.PedidosCliente.Where(p => p.IdPedido == IdPedido).FirstOrDefault();
+        }
+
+    }
+}

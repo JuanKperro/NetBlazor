@@ -1,0 +1,456 @@
+﻿@page "/Cliente/Panel/InicioPanel"
+
+@using AgapeaBlazor2024.Client.Models.Services.Interfaces
+@using AgapeaBlazor2024.Client.Pages.zonaTienda
+
+
+@inject IStorageService storageSvc
+@inject NavigationManager navigate
+@inject IRestService restSvc
+@inject IJSRuntime jsSvc
+
+<div class="container">
+    <div class="row">
+        <div class="col">
+            <h2>Mi perfil</h2>
+            <div></div><!--sangria-->
+            <div class="alert alert-secondary" data-bs-toggle="collapse" href="#collapseDatos">Datos de perfil</div>
+            <div class="collapse" id="collapseDatos">
+
+                <EditForm Model="this._clienteLogged" OnValidSubmit="GuardarDatos">
+                    <DataAnnotationsValidator></DataAnnotationsValidator>
+                    <div class="row">
+                        <div class="col-sm-6">
+                            <label class="row text-muted">Correo electrónico</label>
+                            <div class="row">
+                                <input type="text" id="inputEmail" class="input-group-text" style="width:90%" @bind="@_clienteLogged.Credenciales.Email"/>
+                                </div>
+                            <label class="row text-muted">Contraseña</label>
+                            <div class="row"> <input type="password" id="inputPass" class="input-group-text" style="width:90%" @bind="@_clienteLogged.Credenciales.Password" /></div>
+                            <label class="row text-muted">Nombre</label>
+                            <div class="row"><input type="text" id="inputNombre" class="input-group-text" style="width:90%" @bind="@_clienteLogged.Nombre" /></div>
+                        </div>
+
+                        <div class="col-sm-6">
+                            <label class="row text-muted">Teléfono</label>
+                            <div class="row"><input type="text" id="inputTlfn" class="input-group-text" style="width:90%" @bind="@_clienteLogged.Telefono" /></div>
+                            <label class="row text-muted">Repetir la contraseña</label>
+                            <div class="row"><input type="password" id="inputPassRep" class="input-group-text" style="width:90%" /></div>
+                            <label class="row text-muted">Apellidos</label>
+                            <div class="row"><input type="text" id="inputApellidos" class="input-group-text" style="width:90% " @bind="@_clienteLogged.Apellidos" /></div>
+
+                        </div>
+                    </div>
+                    <div class="row"><span></span></div>
+                    <div class="row">
+                        <div class="col-sm-4">
+                            <label class="text-muted">Foto</label>
+                            <div id="avatarPerfil" class="card" style="width:200px;height:250px; background-color:aliceblue">
+                                <InputFile type="file" accept="image/*" id="selectorImagen" name="imagen" style="visibility: hidden;" OnChange="cambioInputFoto" />
+                                <a onclick="javascript:document.getElementById('selectorImagen').dispatchEvent(new MouseEvent('click'))">
+                                    <!-- $('#selectorImagen').click()" -->
+                                    <!-- si en el src quieres usar el nombre del fihcero src="https://localhost:7152/images/uploads_imags/(arroba)_clienteLogged.ImagenCredenciales"-->
+                                    <img id="imagenUsuario" style="height:250px; width:200px;" src="@this.ImgSrc" />
+                                </a>
+                            </div>
+                            <button type="button" class="btn btn-link btn-sm" id="botonUploadImagen" disabled="@this.disabledUpFoto" @onclick="guardarFoto">+ Subir una foto</button>
+                            <div id="mensajeServicioREST"></div>
+                        </div>
+                        <div class="col-sm-8">
+                            <div class="row text-muted">Usuario</div>
+                            <div class="row"><input type="text" id="inputUsuario" class="input-group-sm" @bind="@_clienteLogged.Credenciales.Login" /></div>
+                            <div class="row text-muted">Genero</div>
+                            <div class="row">
+                                <select class="form-select" aria-label="Elige genero" @bind="@_clienteLogged.Genero">
+                                    <option selected>Elige genero</option>
+
+                                    <option value="Hombre">Hombre</option>
+                                    <option value="Mujer">Mujer</option>
+                                </select>
+                            </div>
+                            <div class="row text-muted">Fecha de nacimiento</div>
+                            <div class="row">
+                                <div class="col-sm-4">
+                                    <select name="dia" id="dia" class="form-select">
+                                        <option>Elige día</option>
+                                        @for (int a = 1; a <= 31; a++)
+                                        {
+                                            <option value="@a">@a</option>
+                                        }
+                                    </select>
+                                </div>
+                                <div class="col-sm-4">
+                                    <select name="mes" id="mes" class="form-select">
+                                        <option>Elige mes</option>
+                                        @foreach (KeyValuePair<String, String> elemento in _meses)
+                                        {
+                                            <option value="@elemento.Key">@elemento.Value</option>
+                                        }
+
+                                    </select>
+                                </div>
+                                <div class="col-sm-4">
+                                    <select name="anio" id="anio" class="form-select">
+                                        <option value="" selected="">Elige año</option>
+                                        @for (int a = 2022; a >= 1923; a--)
+                                        {
+                                            <option value="@a">@a</option>
+                                        }
+                                    </select>
+                                </div>
+                            </div>
+                            <div class="row text-muted">Descripcion</div>
+                            <div class="row"><textarea id="textArea" @bind="@_clienteLogged.Descripcion">@_clienteLogged.Descripcion</textarea> </div>
+                            <div class="row">
+                                <div class="col-6 ro2 align-text-top"><a href=""> Darme de baja</a></div>
+                                <div class="col-6">
+                                    <button type="submit" id="btnSubmitCliente" class="btn btn-primary btn-sm" >Guardar Nuevos Datos del Cliente</button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </EditForm>
+
+            </div>
+
+            <div class="alert alert-secondary" data-bs-toggle="collapse" href="#collapseDirecciones">Direcciones</div>
+            <div class="collapse" id="collapseDirecciones">
+                <div>
+                    <p> Guarda todas tus direcciones de envío y elige la que usarás por defecto donde llegarán tus pedidos.</p>
+
+                    <p>
+                        Estas son las direcciones a las que puedes hacer tus envíos. Las direcciones de envío serán las que elijas mientras que la
+                        facturación será la misma en todas las direcciones:
+                    </p>
+                </div>
+
+                <hr />
+                <!-- lista de direcciones del cliente -->
+                <div class="container">
+                    @foreach (Direccion unadirec in this._clienteLogged.DireccionesCliente)
+                    {
+                        <MiniDireccion Direccion_pintar="unadirec" OperarDireccionEvent="async (iddireccion_ope)=>await OperarEnDireccion(iddireccion_ope)"></MiniDireccion>
+                    }
+                </div>
+
+                <!-- Button trigger modal -->
+                <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#staticBackdrop" @onclick="NuevaDireccion">
+                    + Nueva Direccion
+                </button>
+
+                <!-- Modal -->
+                <div class="modal fade @ModalClass" id="staticBackdrop" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1" aria-labelledby="staticBackdropLabel" aria-hidden="true" style="display: @ModalDisplay">
+                    <div class="modal-dialog">
+                        <div class="modal-content">
+                            <div class="modal-header">
+                                <h5 class="modal-title" id="staticBackdropLabel">@tituloModal</h5>
+                                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close" @onclick="CerrarModal"></button>
+                            </div>
+                            <div class="modal-body">
+                                <div class="container">
+                                    <div class="row">
+                                        <p>Si desea que enviemos el pedido a una dirección distinta de la de facturación, modifique los campos a </p>
+                                        <p>continuación según proceda.</p>
+                                    </div>
+                                    <div class="row">
+                                        <!-- formulario de alta de direcciones -->
+                                        <EditForm Model="this.direccionTratar" class="row g-3" id="formDirecciones">
+                                            
+                                            <div class="col-12">
+                                                <label for="inputCalle" class="form-label">Direccion de Envio:</label>
+                                                <input type="text" class="form-control" id="inputCalle" placeholder="Mi Direccion" name="calle" @bind="this.direccionTratar.Calle">
+                                            </div>
+
+                                            <div class="col-6">
+                                                <label for="inputCP" class="form-label">Codigo Postal:</label>
+                                                <input type="text" class="form-control" id="inputCP" placeholder="Codigo Postal: 28803" name="cp" @bind="this.direccionTratar.CP">
+                                            </div>
+                                            <div class="col-6">
+                                                <label for="inputPais" class="form-label">Pais:</label>
+                                                <input type="text" class="form-control" id="inputPais" placeholder="España" name="pais" @bind="this.direccionTratar.Pais">
+                                            </div>
+
+
+                                            <div class="col-6">
+                                                <label for="inputProvincia" class="form-label">Provincia:</label>
+                                                <select id="inputProvincia" class="form-select" name="provincia" @bind="@this._provincia" @oninput="this.cambioProvincia">
+                                                    <option value="-1" selected> - Seleccionar Provincia - </option>
+                                                    
+                                                        @foreach (Provincia unaprov in this._provincias)
+                                                        {
+                                                            <option value="@String.Concat(unaprov.CPRO,"-",unaprov.PRO)">@unaprov.PRO</option>
+                                                        }
+                                                    
+                                                    
+                                                </select>
+                                            </div>
+                                            <div class="col-6">
+                                                <label for="inputMunicipio" class="form-label">Municipio:</label>
+                                                <select id="inputMunicipio" class="form-select" @bind="@this._municipio" @oninput="this.cambioMunicipio" disabled="@this._provincia.Equals("-1")" name="municipio">
+                                                    <option value="-1" selected>- Selecciona un Municipio -</option>
+                                                    @foreach (Municipio unmun in this._municipios)
+                                                    {
+                                                        <option value="@String.Concat(unmun.CMUM,"-",unmun.DMUN50)">@unmun.DMUN50</option>
+                                                    }
+                                                </select>
+                                            </div>
+
+                                            <hr />
+                                            <div class="col-12">
+                                                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal" @onclick="CerrarModal">Cancelar</button>
+                                                <button type="submit" class="btn btn-primary" id="btnCrearDireccion" @onclick="OperarModal" >@this.tituloBoton</button>
+                                            </div>
+                                            <input type="hidden" id="operacion" name="operacion" value="crear" />
+
+                                        </EditForm>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+
+            </div>
+        </div>
+    </div>
+</div>
+
+@code {
+    #region..... PROPIEDADES ....
+    public Cliente _clienteLogged { get; set; }
+    public Cliente _clienteAtratar { get; set; }
+    public Dictionary<String, String> _meses { get; set; } = new Dictionary<String, String>()
+        {
+            { "01", "Enero" },
+            { "02", "Febrero" },
+            { "03", "Marzo" },
+            { "04", "Abril" },
+            { "05", "Mayo" },
+            { "06", "Junio" },
+            { "07", "Julio" },
+            { "08", "Agosto" },
+            { "09", "Septiembre" },
+            { "10", "Octubre" },
+            { "11", "Noviembre" },
+            { "12", "Diciembre" }
+        };
+    public List<Provincia> _provincias { get; set; }
+    public ICloneable cloneable { get; set; }
+
+    public string _provincia { get; set; } = "-1";
+    public string _municipio { get; set; } = "-1";
+    public List<Municipio> _municipios { get; set; } = new List<Municipio>();
+
+    private bool IsModalVisible = false;
+
+    public Direccion direccionTratar { get; set; } = new Direccion();
+    #endregion
+
+    public bool disabledUpFoto { get; set; } = true;
+    public string ImgSrc { get; set; } = "/images/imagen_usuario_sinavatar.jpg";
+
+    #region .....PROPIEDADES MODAL ....
+    public string ModalDisplay { get; set; } = "none;";
+    public string ModalClass { get; set; } = "";
+    public string tituloModal { get; set; } = "Nueva Direccion";
+    public string tituloBoton { get; set; } = "Crear Direccion";
+    #endregion
+
+    protected override async Task OnInitializedAsync()
+    {
+        this._provincias = await this.restSvc.RecuperarProvincias();
+        this._clienteAtratar = this.storageSvc.RecuperarDatosCliente();
+        //Clono objeto para que no sea el mismo de la referencia del Storage...
+        this._clienteLogged = new Cliente()
+            {
+                IdCliente = this._clienteAtratar.IdCliente,
+                Credenciales = new Cuenta()
+                {
+                    Email = this._clienteAtratar.Credenciales.Email,
+                    Password = this._clienteAtratar.Credenciales.Password,
+                    ImagenCuentaBASE64 = this._clienteAtratar.Credenciales.ImagenCuentaBASE64,
+                    Login = this._clienteAtratar.Credenciales.Login
+
+                },
+                Nombre = this._clienteAtratar.Nombre,
+                Telefono = this._clienteAtratar.Telefono,
+                Apellidos = this._clienteAtratar.Apellidos,
+                Genero = this._clienteAtratar.Genero,
+                Descripcion = this._clienteAtratar.Descripcion,
+                DireccionesCliente = this._clienteAtratar.DireccionesCliente.ToList<Direccion>(),
+                PedidosCliente = this._clienteAtratar.PedidosCliente.ToList<Pedido>()
+
+    };
+        this.ImgSrc = this._clienteLogged.Credenciales.ImagenCuentaBASE64;
+    }
+
+    public async Task guardarFoto()
+    {
+        RestMessage resp =  await this.restSvc.subirImagen(this.ImgSrc);
+        if (resp.Codigo == 0)
+        {
+            Cliente datosCliente = resp.DatosCliente;
+            this.storageSvc.AlmacenamientoDatosCliente(datosCliente);
+            this._clienteAtratar = this.storageSvc.RecuperarDatosCliente();
+
+            await this.jsSvc.InvokeVoidAsync("alert", "Imagen subida correctamente");
+            StateHasChanged();  
+        }
+        else
+        {
+            await this.jsSvc.InvokeVoidAsync("alert", "Error al subir la imagen");
+        }
+    }
+
+    public async Task cambioInputFoto(InputFileChangeEventArgs ev)
+    {
+        IBrowserFile _fichimagen = ev.File;
+        //tengo q leer el contenido del fichero imagen seleccionado como un array de bytes
+        //y pasar ese array de bytes a base64 y mostrarlo en el src del elemento <img src="...">
+        //en formato "data: image/tipo;base64, ..."
+        byte[] _contfich = new byte[_fichimagen.Size];
+        await _fichimagen.OpenReadStream().ReadAsync(_contfich);
+
+        this.ImgSrc = $"data:{_fichimagen.ContentType};base64, {Convert.ToBase64String(_contfich)}";
+        this.disabledUpFoto = false;
+        StateHasChanged();
+
+    }
+
+    public async Task  OperarEnDireccion(string ope_iddireccion)
+    {
+
+        string operacion = ope_iddireccion.Split("_")[0];
+        string iddireccion = ope_iddireccion.Split("_")[1];
+        Console.WriteLine("Ha llegado a OperarEnDireccion con " + operacion + iddireccion);
+        switch (operacion)
+        {
+            case "editar":
+                //abrir formulario de edicion de direccion
+                this.direccionTratar = this._clienteLogged.DireccionesCliente.Find(d => d.IdDireccion == iddireccion);
+                this.tituloModal = "Editar Direccion";
+                this.tituloBoton = "Actualizar Direccion";
+                this._provincia = String.Concat(this.direccionTratar.ProvinciaDirec.CPRO, "-", this.direccionTratar.ProvinciaDirec.PRO);
+                await this.cambioProvincia(new ChangeEventArgs { Value = this._provincia });
+                await Task.Delay(500);
+                this._municipio = String.Concat(this.direccionTratar.MunicipioDirec.CMUM, "-", this.direccionTratar.MunicipioDirec.DMUN50);
+                AbrirModal();
+                break;
+            case "eliminar":
+                //eliminar direccion
+
+                Direccion direccionEliminar= this._clienteLogged.DireccionesCliente.Find(d => d.IdDireccion == iddireccion);
+                this._clienteLogged.DireccionesCliente.Remove(direccionEliminar);
+                StateHasChanged();
+                break;
+        }
+
+    }
+
+    #region .....METODOS ABRIR Y CERRAR MODAL ...
+    private void AbrirModal()
+    {
+        ModalDisplay = "block;";
+        //await Task.Delay(100);//Delay allows bootstrap to perform nice fade animation
+        ModalClass = "show";
+        StateHasChanged();
+    }
+
+    private void CerrarModal()
+    {
+        ModalClass = "";
+        //await Task.Delay(250);
+        ModalDisplay = "none;";
+        StateHasChanged();
+
+    }
+    #endregion
+    public void NuevaDireccion()
+    {
+        this.direccionTratar = new Direccion();
+        this.tituloModal = "Nueva Direccion";
+        this.tituloBoton = "Crear Direccion";
+        this._provincia = "-1";
+        this._municipio = "-1";
+        AbrirModal();
+    }
+
+    public void OperarModal()
+    {
+        if (this.tituloModal == "Nueva Direccion")
+        {
+
+            this.direccionTratar.EsPrincipal = false;
+            this.direccionTratar.EsFacturacion = false;
+            this._clienteLogged.DireccionesCliente.Add(this.direccionTratar);
+        }
+        else
+        {
+            Direccion direccionEditar = this._clienteLogged.DireccionesCliente.Find(d => d.IdDireccion == this.direccionTratar.IdDireccion);
+            int index = this._clienteLogged.DireccionesCliente.IndexOf(direccionEditar);
+            this._clienteLogged.DireccionesCliente[index] = this.direccionTratar;
+        }
+        CerrarModal();
+    }
+
+    public async Task GuardarDatos()
+    {
+        //Hacer update en la base de datos...
+
+        RestMessage resp_updt = await this.restSvc.ActualizarDatosCliente(this._clienteLogged);
+        switch (resp_updt.Codigo)
+        {
+            case 0:
+                Cliente cliente_actualizado = resp_updt.DatosCliente;
+                this.storageSvc.AlmacenamientoDatosCliente(cliente_actualizado);
+                await this.jsSvc.InvokeVoidAsync("alert", "Datos actualizados correctamente");
+                break;
+            case 1:
+                await this.jsSvc.InvokeVoidAsync("alert", "Error al actualizar los datos");
+                break;
+            case 2:
+                await this.jsSvc.InvokeVoidAsync("window.location.assign", "CLiente/CambioContraseña");
+                break;
+                default:
+                await this.jsSvc.InvokeVoidAsync("alert", "Error al actualizar los datos");
+                break;
+
+        }
+    }
+
+    #region .....METODOS CAMBIOS DE DIRECCION ....
+    public async Task cambioProvincia(ChangeEventArgs ev)
+    {
+        if (ev.Value.ToString() != "-1")
+        {
+
+           this.direccionTratar.ProvinciaDirec = new Provincia
+                {
+                    CCOM = "",
+                    CPRO = ev.Value.ToString().Split("-")[0],
+                    PRO = ev.Value.ToString().Split("-")[1]
+
+                };
+                //cargar municipios de la provincia seleccionada
+            this._municipios = await this.restSvc.RecuperarMunicipios(ev.Value.ToString().Split("-")[0]);
+        }
+
+    }
+    public async Task cambioMunicipio(ChangeEventArgs ev)
+    {
+        if (ev.Value.ToString() != "-1")
+        {
+            this.direccionTratar.MunicipioDirec = new Municipio
+                {
+                    CPRO = _provincia.Split("-")[0],
+                    CMUM = ev.Value.ToString().Split("-")[0],
+                    DMUN50 = ev.Value.ToString().Split("-")[1]
+
+
+                };
+        }
+
+    }
+    #endregion
+}

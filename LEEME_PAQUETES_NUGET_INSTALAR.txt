@@ -1,0 +1,21 @@
+paquetes NuGet para CLIENTE BLAZOR
+----------------------------------
+
+
+
+
+
+
+
+paquetes NuGet para SERVIDOR ASP.NET CORE
+-----------------------------------------
+paquetes Identity:
+	- Microsoft.AspNetCore.Identity
+	- Microsfot.AspNetCore.Identity.EntityFrameworkCore
+
+paquetes para EF:
+	- Microsoft.EntityFrameworkCore.SqlServer
+	- Microsoft.EntityFrameworkCore.Tools
+
+paquete para generar tokens JWT:
+	- Microsfot.AspNetCore.Authentication.JwtBearer

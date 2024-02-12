@@ -1,0 +1,181 @@
+﻿@page "/Tienda/MostrarDetallesLibro/{isbn13}"
+@using AgapeaBlazor2024.Client.Models.Services.Interfaces
+@inject IRestService restSvc
+@inject IStorageService storageSvc
+@inject IJSRuntime jsSvc
+
+<div class="row">
+    <div class="col-8">
+        <div class="mb-3" style="max-width: 540px;">
+            <div class="row g-0">
+                <div class="col-md-4" style="height: 170px">
+                    <div class="container">
+                        <div class="row">
+                            <div class="w-100" style="height: 80%">
+                                <img src="@this.libro.ImagenLibroBASE64" class="img-fluid rounded-start" alt="...">
+                            </div>
+                        </div>
+                        <div class="row mt-3">
+                            <a class="btn btn-primary btn-sm" style="visibility: visible;">Comprar</a>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-8 ps-1">
+                    <div class="ms-3">
+                        <h5 class="card-title">@this.libro.Titulo</h5>
+                        <h6 class="card-text">@this.libro.Autores</h6>
+                        <hr />
+                        <h6>Detalles del libro</h6>
+                        <div class="row">
+                            <div class="col-3">
+                                <div class="card-text text-muted">Editorial</div>
+                                <div class="card-text text-muted">Edición</div>
+                                <div class="card-text text-muted">Páginas</div>
+                                <div class="card-text text-muted">Dimensiones</div>
+                                <div class="card-text text-muted">Idioma</div>
+                                <div class="card-text text-muted">ISBN</div>
+                                <div class="card-text text-muted">ISBN-10</div>
+                            </div>
+                            <div class="col-9 ps-4">
+                                <div class="card-text">@this.libro.Editorial</div>
+                                <div class="card-text">@this.libro.Edicion</div>
+                                <div class="card-text">@this.libro.NumeroPaginas </div>
+                                <div class="card-text">@this.libro.Dimensiones</div>
+                                <div class="card-text">@this.libro.Idioma</div>
+                                <div class="card-text">@this.libro.ISBN13</div>
+                                <div class="card-text">@this.libro.ISBN10</div>
+                            </div>
+                        </div>
+
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-4 px-0">
+        <div class="bg-light p-3 border border-1">
+            <div class="container bg-white border border-1 p-2">
+                <div class="d-flex flex-row-reverse align-items-end w-100">
+                    <h4 class="mx-2">€</h4><h2>@this.libro.Precio</h2>
+                </div>
+                <div class="container px-3">
+                    <div class="row">
+                        <div class="col-4 border border-2 border-primary d-flex align-items-center justify-content-center"><img src="" /></div>
+                        <div class="col-8 border border-2 border-primary border-start-0 d-flex flex-column justify-content-center p-2">
+                            <div class="d-flex justify-content-around"><span class="text-primary"><strong>Envío Gratis</strong><i class="fa-solid fa-circle-info mx-2"></i></span> </div>
+                            <div class="d-flex justify-content-around"><span class="text-primary"><small>al comprar este libro</small></span></div>
+                        </div>
+                    </div>
+                </div>
+                <div class="d-flex justify-content-center py-3 px-1">
+                    <a class="btn btn-primary w-100 p-2" style="border-radius: 0px"><i class="fa-solid fa-cart-shopping pe-2"></i><strong> Comprar / Recoger</strong></a>
+                </div>
+                <div class="d-flex flex-row justify-content-between px-1">
+                    <a class="btn btn-outline-primary p-2 flex-fill" style="border-radius: 0px"> <small>Agregar a la lista de deseos</small></a>
+
+
+                    <a id="despliega-listas" class="btn btn-outline-primary ms-2 border border-1 border-primary position-relative" style="border-radius: 0px">
+                        <strong>:</strong>
+                        <div class="position-absolute top-100 start-0 visually-hidden" id="dropdown-listas" style="width: 150px">
+                            <div class="btn btn-outline-primary w-100" style="border-radius: 0px">Agregar nueva lista</div>
+                            <div class="btn btn-outline-primary border-top-0 w-100" style="border-radius: 0px">Ver más listas</div>
+                        </div>
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="darValoracion sinBordTop">
+        <h4>Danos tu valoración de este libro</h4>
+        <div id="estrellas" class="d-flex flex-row justify-content-center">
+            <ul class="list-group list-group-horizontal">
+                @if (clienteLogged != null && this.libroEnPedido)
+                {
+                    @for (int a = 1; a <= 5; a++)
+                    {
+                     
+                    
+                        <li class="list-group-item" @onclick="()=> abrirModalOpinion(a)">
+                            <i id="estrella-@a" value="@a" class="fa-solid fa-star" style="color:#0d6efd; font-size: 2em;"></i>
+                        </li>
+                    }
+                }
+                else
+                {
+                    <p>DEBES ESTAR LOGGUEADO  O HABER COMPRADO ESTE LIBRO PARA PODER OPINAR</p>
+
+
+                }
+
+
+            </ul>
+        </div>
+    </div>
+    <div>
+        <ModalComentarios valoracion="this.valoracion" libro="this.libro" ></ModalComentarios>
+
+    </div>
+    <div>
+<div class="container">
+            <h4>Opiniones de otros clientes</h4>
+            <div class="row">
+                @foreach (Opinion opinion in opiniones)
+                {
+                    <VistaOpinion opinion="opinion"></VistaOpinion>
+                }
+                
+
+            </div>
+        </div>
+    </div>
+</div>
+
+
+
+@code {
+    [Parameter]
+    public String isbn13 { get; set; }
+
+    public Libro libro { get; set; } = new Libro();
+
+    public Cliente clienteLogged { get; set; }
+
+    public bool libroEnPedido { get; set; } = false;
+
+    public int valoracion { get; set; }
+
+    public List<Opinion> opiniones { get; set; } = new List<Opinion>();
+
+
+    protected override async Task OnInitializedAsync()
+    {
+        this.libro = await this.restSvc.RecuperarUnLibro(this.isbn13);
+        this.clienteLogged = this.storageSvc.RecuperarDatosCliente();
+        if (this.clienteLogged != null) {
+            this.clienteLogged.PedidosCliente.ForEach(pedido =>
+            {
+                pedido.ElementosPedido.ForEach(libroPedido =>
+            {
+                if (libroPedido.LibroItem.ISBN13 == this.isbn13)
+                {
+                    libroEnPedido = true;
+                }
+            });
+
+            });
+
+        }
+
+        this.opiniones = await this.restSvc.RecuperarOpiniones(this.isbn13);
+
+    }
+
+    public async Task abrirModalOpinion(int valoracion)
+    {
+        this.valoracion = valoracion;
+        await this.jsSvc.InvokeVoidAsync("window.adminFormModal.ShowModal", "modalComentarios");
+
+    }
+}

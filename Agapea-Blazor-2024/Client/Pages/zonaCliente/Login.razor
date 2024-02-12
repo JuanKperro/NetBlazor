@@ -1,0 +1,106 @@
+﻿@page "/Cliente/Login"
+@using AgapeaBlazor2024.Client.Models.Services.Interfaces
+
+@inject NavigationManager navigate
+@inject IJSRuntime jsService
+@inject IRestService restService
+@inject IStorageService storageService
+
+<div class="container pt-5">
+    <div class="row">
+        <div class="col-7 pt-3">
+            <h2>Registrate en <strong>agapea.com</strong></h2>
+            <p>Regístrate en agapea.com y disfruta de todos sus beneficios y comodidades.</p>
+
+            <div class="m-4">
+                <a class="btn btn-primary btn-lg" onclick="@(()=>this.navigate.NavigateTo("/Cliente/Registro"))">Registrate</a>
+            </div>
+
+            <p class="mt-4"><b>Crea tus propias listas de libros</b> (<a href="">Consultar información</a>)</p>
+
+            <div class="d-flex justify-content-center mt-5">
+                <img src="/images/imagen-login.png" />
+            </div>
+        </div>
+        <div class="col-5 bg-light p-4 border">
+
+            <div asp-validation-summary="All" class="text-danger"></div>
+
+            <EditForm Model="Creds" OnValidSubmit="LoginCliente">
+                <DataAnnotationsValidator></DataAnnotationsValidator>
+
+                <!--  ---- mensajes de error servicio rest server ------------------------- -->
+                @if (! String.IsNullOrEmpty(MensajesErrorServer))
+                {
+                    <div class="mb-3">
+                        <span class="text-danger">
+                            @MensajesErrorServer
+                        </span>
+                    </div>
+                }
+                <!-- ----------------------------------------------------------------------- -->
+                <h4>Identifícate con:</h4>
+
+                <p>Usuario de <img src="/images/agapea-logo.svg" alt="" width="123" height="60"></p>
+
+                <div class="form-floating m-1">
+                    <input type="email" class="form-control" id="Email" placeholder="Mi usuario" @bind-value="@Creds.Email" />
+                    <ValidationMessage For="@(()=>Creds.Email)" class="text-danger"></ValidationMessage>
+                    <label for="floatingInput">Email</label>
+                </div>
+
+                <div class="form-floating m-1">
+                    <input type="password" class="form-control" id="Contraseña" placeholder="Contraseña" @bind-value="@Creds.Password" />
+                    <ValidationMessage For="@(()=>Creds.Password)" class="text-danger"></ValidationMessage>
+                    <label for="floatingPassword"><small>Contraseña</small></label>
+                </div>
+
+
+                <div class="mt-2 ml-1">
+                    <a href=""><small class="text-mutted">¿Has olvidado tu contraseña?</small></a>
+                </div>
+
+                <button class="m-4 btn btn-lg btn-primary" type="submit">Identifícate</button>
+
+                <div class="ml-1">
+                    <p class="text-muted">Al identificarte, aceptas nuestras <a class="text-muted" href="">Condiciones de uso, y nuestras condiciones de cookies</a></p>
+                </div>
+            </EditForm>
+        </div>
+    </div>
+
+</div>
+
+
+@code {
+    //PRUEBAS: mio@mio.es   hOLA1234!
+    public Cuenta Creds { get; set; } = new Cuenta();
+    public String MensajesErrorServer { get; set; } = "";
+
+    public async Task LoginCliente()
+    {
+        await jsService.InvokeVoidAsync("console.log", "credenciales a enviar...", Creds);
+
+        RestMessage _resp = await this.restService.LoginCliente(Creds);
+        if (_resp.Codigo == 0)
+        {
+            //almacenamos datos recibidos desde el servicio asp.net core en STORAGE (localstorage, indexedDB,...)
+            //o en un servicio usando observables <--- mucho mas seguro pq es en RAM...
+            
+            //...PARA INDEXEDB....
+            // await this.storageService.AlmacenamientoDatosClienteAsync((Cliente)_resp.DatosCliente);
+            // await this.storageService.AlmacenamientoJWTAsync(_resp.TokenSesion);
+            
+            //...para LOCALSTORAGE, SUBJECT....
+            this.storageService.AlmacenamientoDatosCliente((Cliente)_resp.DatosCliente);
+            this.storageService.AlmacenamientoJWT(_resp.TokenSesion);
+
+            this.navigate.NavigateTo("/Tienda/Libros");
+        } else
+        {
+            //mostrar mensajes de error del login en vista...
+            await this.jsService.InvokeVoidAsync("console.log", "ERROR TREMENDO EN SERVICIO ASP.NET CORE:", _resp.Error);
+            this.MensajesErrorServer = _resp.Mensaje;
+        }
+    }
+}

@@ -1,0 +1,24 @@
+﻿<div class="card">
+
+    <div class="card-header d-flex flex-row justify-content-between">
+        <div class="d-flex flex-column">
+            <span class="text-muted">@this.opinion.LoginCliente</span>
+            @{
+                for (int i = 0; i < this.opinion.Puntuacion; i++)
+                {
+                    <i class="fa-star fa-solid" style="color: red; font-size: 0.5em"></i>
+                }
+            }
+        </div>
+        <div>@this.opinion.FechaOpinion</div>
+    </div>
+
+    <div class="card-body">
+        <p class="card-text">@this.opinion.TextoOpinion</p>
+        <p class="card-text">Valoracion: @this.opinion.Puntuacion</p>
+    </div>
+</div>
+@code {
+    [Parameter]
+    public Opinion opinion { get; set; }
+}

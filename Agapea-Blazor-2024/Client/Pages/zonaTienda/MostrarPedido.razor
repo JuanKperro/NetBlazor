@@ -1,0 +1,205 @@
+﻿@page "/Tienda/MostrarPedido"
+@using AgapeaBlazor2024.Client.Models.Services.Interfaces
+
+
+@inject IStorageService storageSvc
+@inject NavigationManager navigate
+@inject IRestService restSvc
+@inject IJSRuntime jsSvc
+
+<div class="container">
+    <div class="row">
+        <!-- columna para datos del pedido: direccion envio, facturacion, datos pago-->
+        <div class="col-7">
+            <EditForm EditContext="@this.formPedidoEditContext" OnSubmit="this.FinalizarPedido">
+                <CascadingValue Name="EditContextFormPedido" Value="this.formPedidoEditContext">
+                <CascadingValue Name="clienteLogged" Value="clienteLogged">
+                    <CascadingValue Name="listaProvincias" Value="listaProvincias">
+
+                        <DatosEntregaPedido ShowDatosFacturaEvent="@((valor)=>{ this.ShowDatosFacturaPedido=valor; })"></DatosEntregaPedido>
+                        @if (this.ShowDatosFacturaPedido)
+                        {
+                            <DatosFacturacionPedido></DatosFacturacionPedido>
+                        }
+                        <DatosPagoPedido tituloPago="@(this.ShowDatosFacturaPedido==true ? "3. - Pago" : "2. - Pago")"></DatosPagoPedido>
+                    
+                    </CascadingValue>
+                </CascadingValue>
+                </CascadingValue>
+
+                <div class="d-flex flex-row justify-content-center mt-3">
+                    <button type="submit" class="btn btn-primary btn-lg">
+                        <i class="fa-solid fa-truck-fast"></i>  Finalizar Pedido
+                    </button>
+                </div>
+            </EditForm>
+        </div>
+
+        <!-- columna para elementos del pedido, subtotal, gastos envio y total -->
+        <div class="col-5">
+            <div class="container">
+                <div class="row">
+                    <div class="col"><h5><strong>Resumen de la cesta</strong></h5></div>
+                </div>
+                @foreach (ItemPedido item in this._listaItems)
+                {
+                    <div class="row">
+                        <div class="col">
+                            <ElementoPedido elemento="@item" operarItemEvent="@ModificarItemPedido"></ElementoPedido>
+                        </div>
+                    </div>
+                }
+                <hr />
+
+                <div class="row">
+                    <div class="col-10"><p><strong>Subtotal:</strong></p></div>
+                    <div class="col-2"><p style="color:red">@this.SubTotal €</p></div>
+                </div>
+
+                <div class="row">
+                    <div class="col-10"><p><strong>Gastos de envio y Gestion:</strong></p></div>
+                    <div class="col-2"><p style="color:red">@this.GastosEnvio €</p></div>
+                </div>
+
+                <div class="row" style="background: #ededed">
+                    <div class="col-10"><p><strong>Total a pagar:</strong></p></div>
+                    <div class="col-2"><p style="color:red">@this.Total €</p></div>
+                </div>
+
+                <div class="row">
+                    <small>El periodo de entrega es <span style="color:forestgreen">de 24 a 48 Horas</span></small>
+                </div>
+
+                <div class="mt-3 d-flex flex-row justify-content-between">
+                    <div>
+                        <a class="btn btn-light"
+                           onclick="@(()=>this.navigate.NavigateTo("/Tienda/Libros"))">
+                            <i class="fa-solid fa-book"></i> Seguir Comprando
+                        </a>
+                    </div>
+                    <div>
+                        <a class="btn btn-primary">
+                            <i class="fa-solid fa-truck"></i> Finalizar Pedido
+                        </a>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+    </div>  
+</div>
+
+
+@code {
+
+    [Parameter]
+    [SupplyParameterFromQuery(Name ="idcliente")]
+    public string IdCliente { get; set; }
+
+    [Parameter]
+    [SupplyParameterFromQuery(Name = "idpedido")]
+    public string IdPedido { get; set; }
+
+
+    public List<ItemPedido> _listaItems { get; set; } = new List<ItemPedido>();
+    public Cliente clienteLogged { get; set;  }
+    public List<Provincia> listaProvincias { get; set; }
+    private bool ShowDatosFacturaPedido { get; set; } = false;
+
+    private DatosPago datosPago = new DatosPago();
+    protected EditContext formPedidoEditContext { get; set; }
+
+    public EditForm formPedido { get; set; }
+
+    private Decimal GastosEnvio { get; set; } = 0;
+    private Decimal SubTotal { get; set; } = 0;
+    private Decimal Total { get; set; } = 0;
+
+
+
+    protected override async Task OnInitializedAsync()
+    {
+        this._listaItems = this.storageSvc.RecuperarItemsPedido();
+        this.clienteLogged = this.storageSvc.RecuperarDatosCliente();
+        this.listaProvincias = await this.restSvc.RecuperarProvincias();
+        this.formPedidoEditContext = new EditContext(datosPago);
+        calcularTotales();
+
+    }
+
+    public void ModificarItemPedido(KeyValuePair<String,ItemPedido> datos)
+    {
+        this.storageSvc.OperarItemsPedido(datos.Value.LibroItem, datos.Value.CantidadItem, datos.Key);
+        calcularTotales();
+        StateHasChanged();
+    }
+
+    public async Task FinalizarPedido()
+    {
+        await this.jsSvc.InvokeVoidAsync("console.log", "DATOS PAGO Y NUEVO PEDIDO.....", this.datosPago);
+        Direccion _direcPpalCliente ;
+        Direccion _direcFacCliente;
+        if (this.clienteLogged.DireccionesCliente.Count != 0 )
+        {
+            if (this.clienteLogged.DireccionesCliente.Where((Direccion d) => d.EsPrincipal == true).Count() > 0)
+            {
+                _direcPpalCliente = this.clienteLogged.DireccionesCliente.Where((Direccion d) => d.EsPrincipal == true).Single<Direccion>();
+                _direcFacCliente = this.clienteLogged.DireccionesCliente.Where((Direccion d) => d.EsFacturacion == true).Single<Direccion>();
+            }
+            else
+            {
+                _direcPpalCliente = new Direccion();
+            }
+
+        }
+        else
+        {
+            _direcPpalCliente = new Direccion();    
+
+        }
+
+
+        //recuperar datos de envio, facturacion, pago y enviar a servicio RESTFUL para finalizar pedido...
+        Pedido nuevoPedido = new Pedido
+            {
+                DireccionEnvio = !datosPago.esPrincipal_envio ? _direcPpalCliente : this.datosPago.DireccionEnvio,
+                DireccionFacturacion = this.ShowDatosFacturaPedido ? this.datosPago.DireccionFacturacion : null,
+                ElementosPedido = this._listaItems,
+                EstadoPedido = "Pendiente de Pago",
+                FechaPedido = DateTime.Now,
+                IdCliente = this.clienteLogged.IdCliente,
+                IdPedido = Guid.NewGuid().ToString(),
+                Total = this.Total,
+                SubTotal = this.SubTotal,
+                GastosEnvio = this.GastosEnvio
+            };
+
+        RestMessage _resp = await this.restSvc.FinalizarPedido(this.datosPago,nuevoPedido);
+
+        await this.jsSvc.InvokeVoidAsync("console.log", "RESPUESTA FINALIZAR PEDIDO.....", _resp);
+        if (_resp.Codigo == 0)
+        {
+            string _urlSalto = _resp.Mensaje;
+            await this.jsSvc.InvokeVoidAsync("window.location.assign", _urlSalto);
+        }
+        else
+        {
+            // Mostrar los errores
+            jsSvc.InvokeVoidAsync("alert", _resp.Error);
+        }
+
+
+
+        // this.storageSvc.VaciarItemsPedido();
+        // this.navigate.NavigateTo("/Tienda/Libros");
+    }
+
+    private void calcularTotales()
+    {
+        this._listaItems = this.storageSvc.RecuperarItemsPedido();
+
+        this.SubTotal = this._listaItems.Sum(item => item.CantidadItem * item.LibroItem.Precio);
+        this.Total = this.SubTotal + this.GastosEnvio;
+        
+    }
+}
